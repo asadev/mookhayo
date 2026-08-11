@@ -14,6 +14,7 @@ import { SITE } from '@/content/site';
 import { Shell } from '@/components/ui/Section';
 import { useCopy } from '@/lib/lang';
 import { useSmoothScroll } from '@/lib/smooth-scroll';
+import { LogoMark } from '@/components/chrome/LogoMark';
 
 /**
  * The clock is an external system, and it is the visitor's clock — not the
@@ -40,8 +41,11 @@ export function Footer() {
       <Shell className="flex flex-col gap-[clamp(1.75rem,4vh,2.75rem)] py-[clamp(3rem,7vh,4.5rem)]">
         <div className="flex flex-col gap-[clamp(1.5rem,3vh,2rem)] sm:flex-row sm:items-end sm:justify-between sm:gap-8">
           <div className="flex min-w-0 flex-col gap-2.5">
-            <span className="t-heading text-[clamp(1.6rem,4.2vw,2.4rem)] tracking-[0.08em] text-cream">
-              {SITE.mark}
+            <span className="flex items-center gap-3">
+              <LogoMark className="h-[clamp(1.3rem,3.4vw,1.9rem)] w-[clamp(1.3rem,3.4vw,1.9rem)] shrink-0 text-ember-hot" />
+              <span className="t-heading text-[clamp(1.6rem,4.2vw,2.4rem)] tracking-[0.08em] text-cream">
+                {SITE.mark}
+              </span>
             </span>
             {/* Not truncated: it is four fixed role words, and clipping it to
                 "Content…" loses half of what she does. Wrapping is the correct

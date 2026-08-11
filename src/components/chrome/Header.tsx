@@ -21,6 +21,7 @@ import { useReducedMotion } from '@/lib/hooks';
 import { useCopy } from '@/lib/lang';
 import { useSmoothScroll } from '@/lib/smooth-scroll';
 import { LangSwitcher } from './LangSwitcher';
+import { LogoMark } from './LogoMark';
 
 type NavSectionId = Exclude<SectionId, 'hero' | 'intro'>;
 
@@ -219,9 +220,12 @@ export function Header() {
             onClick={() => scrollTo(0)}
             aria-label={copy.footer.backToTop}
             data-cursor="link"
-            className="font-mono text-[0.7rem] tracking-[0.42em] text-cream transition-colors duration-300 ease-out-expo hover:text-glow"
+            className="group flex items-center gap-2.5 text-cream transition-colors duration-300 ease-out-expo hover:text-glow sm:gap-3"
           >
-            {SITE.mark}
+            {/* The aperture opens a few degrees on hover — the one place the
+                mark moves, and it moves the way the object it depicts does. */}
+            <LogoMark className="h-[1.15rem] w-[1.15rem] shrink-0 text-flare transition-[transform,color] duration-500 ease-out-expo group-hover:rotate-[22deg] group-hover:text-glow sm:h-[1.3rem] sm:w-[1.3rem]" />
+            <span className="font-mono text-[0.7rem] tracking-[0.42em]">{SITE.mark}</span>
           </button>
 
           <div className="flex items-center gap-2 sm:gap-3">
