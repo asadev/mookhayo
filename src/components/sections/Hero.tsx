@@ -19,7 +19,7 @@ import { EASE, gsap } from '@/lib/gsap';
 import { useReducedMotion } from '@/lib/hooks';
 import { useCopy } from '@/lib/lang';
 import { useSmoothScroll } from '@/lib/smooth-scroll';
-import { HeroPortrait } from '@/lib/webgl/HeroPortrait';
+import { HeroPortrait } from '@/components/sections/HeroPortrait';
 import { Section } from '@/components/ui/Section';
 
 /**
