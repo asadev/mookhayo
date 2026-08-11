@@ -1,26 +1,312 @@
 @import "tailwindcss";
 
+/* ==========================================================================
+   MOOKHAYO — design tokens
+   The palette is not invented. Every ember value below was sampled directly
+   out of her studio portrait (raw/portrait-muhayyo.png): the black is her
+   backdrop, the ember is her rim light. The site is lit by the same key.
+   ========================================================================== */
+
+@theme {
+  /* --- surface: sampled from the portrait's background falloff --- */
+  --color-void: #060301;
+  --color-ink: #0b0705;
+  --color-ash: #150c06;
+  --color-soot: #1f1108;
+
+  /* --- ember: sampled from the rim light, brightened only where UI needs contrast --- */
+  --color-ember-deep: #562301;
+  --color-ember: #873703;
+  --color-ember-hot: #a8480a;
+  --color-flame: #ca743b;
+  --color-flare: #e9853f;
+  --color-glow: #ff9e5e;
+
+  /* --- light --- */
+  --color-cream: #f5ebe2;
+  --color-bone: #cdbfb3;
+  --color-smoke: #7b6c60;
+
+  /* --- type --- */
+  --font-display: var(--font-instrument-serif), "Times New Roman", serif;
+  --font-sans: var(--font-inter-tight), ui-sans-serif, system-ui, sans-serif;
+  --font-mono: var(--font-jetbrains-mono), ui-monospace, "SF Mono", monospace;
+
+  /* --- motion: one easing family, so everything moves like one object --- */
+  --ease-out-expo: cubic-bezier(0.16, 1, 0.3, 1);
+  --ease-in-out-quart: cubic-bezier(0.76, 0, 0.24, 1);
+  --ease-out-quint: cubic-bezier(0.22, 1, 0.36, 1);
+}
+
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  --shell-x: clamp(1.25rem, 4.5vw, 5rem);
+  --rail-w: 4.5rem;
+  --grain-opacity: 0.035;
+  color-scheme: dark;
 }
 
-@theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
+/* --------------------------------------------------------------------------
+   Base
+   -------------------------------------------------------------------------- */
+
+* {
+  min-width: 0; /* kill flex/grid overflow before it starts (prefs 5.3) */
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
+html {
+  background-color: var(--color-void);
+  /* Lenis drives scrolling; native smooth would fight it */
+  scroll-behavior: auto;
+  -webkit-text-size-adjust: 100%;
 }
 
 body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  background-color: var(--color-void);
+  color: var(--color-cream);
+  font-family: var(--font-sans);
+  font-synthesis-weight: none;
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  /* the page must never drift sideways (prefs 5.3) */
+  overflow-x: clip;
+}
+
+/* Lenis: html gets .lenis while the smooth-scroll instance is alive */
+html.lenis,
+html.lenis body {
+  height: auto;
+}
+.lenis.lenis-smooth {
+  scroll-behavior: auto !important;
+}
+.lenis.lenis-stopped {
+  overflow: hidden;
+}
+
+::selection {
+  background: var(--color-ember);
+  color: var(--color-cream);
+}
+
+:focus-visible {
+  outline: 2px solid var(--color-flare);
+  outline-offset: 3px;
+  border-radius: 2px;
+}
+
+/* Hide the native cursor only when our custom one is actually mounted and
+   the device has a real pointer. Never hide it on touch. */
+html[data-cursor="on"],
+html[data-cursor="on"] * {
+  cursor: none !important;
+}
+
+/* --------------------------------------------------------------------------
+   Type scale
+   -------------------------------------------------------------------------- */
+
+.t-display {
+  font-family: var(--font-display);
+  font-weight: 400;
+  line-height: 0.86;
+  letter-spacing: -0.025em;
+  text-wrap: balance;
+}
+
+.t-heading {
+  font-family: var(--font-display);
+  font-weight: 400;
+  line-height: 0.98;
+  letter-spacing: -0.02em;
+  text-wrap: balance;
+}
+
+/* Camera-slate metadata voice: section numbers, labels, timecodes */
+.t-meta {
+  font-family: var(--font-mono);
+  font-size: clamp(0.625rem, 0.72vw, 0.75rem);
+  font-weight: 400;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  color: var(--color-smoke);
+}
+
+.t-body {
+  font-family: var(--font-sans);
+  font-size: clamp(1rem, 1.08vw, 1.1875rem);
+  line-height: 1.62;
+  letter-spacing: -0.008em;
+  color: var(--color-bone);
+  text-wrap: pretty;
+}
+
+.t-lead {
+  font-family: var(--font-sans);
+  font-size: clamp(1.125rem, 1.55vw, 1.5rem);
+  line-height: 1.5;
+  letter-spacing: -0.014em;
+  color: var(--color-cream);
+  text-wrap: pretty;
+}
+
+/* Ellipsis, never a mid-word slice (prefs 5.6) */
+.truncate-1 {
+  display: -webkit-box;
+  -webkit-line-clamp: 1;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+.truncate-2 {
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+/* --------------------------------------------------------------------------
+   Surfaces — one glass treatment everywhere (prefs 6.1 / 6.2)
+   Glossy sheen + heavy blur + saturation, so it reads as glass even when
+   there is nothing but black behind it.
+   -------------------------------------------------------------------------- */
+
+.glass {
+  background-image: linear-gradient(
+    155deg,
+    rgba(245, 235, 226, 0.11) 0%,
+    rgba(245, 235, 226, 0.045) 32%,
+    rgba(245, 235, 226, 0.015) 62%,
+    rgba(202, 116, 59, 0.05) 100%
+  );
+  background-color: rgba(11, 7, 5, 0.55);
+  backdrop-filter: blur(22px) saturate(165%);
+  -webkit-backdrop-filter: blur(22px) saturate(165%);
+  border: 1px solid rgba(245, 235, 226, 0.08);
+  box-shadow:
+    inset 0 1px 0 0 rgba(245, 235, 226, 0.13),
+    inset 0 -1px 0 0 rgba(0, 0, 0, 0.35),
+    0 18px 60px -24px rgba(0, 0, 0, 0.9);
+}
+
+/* Same family, lighter — for rails and chrome that sit over content */
+.glass-chrome {
+  background-image: linear-gradient(
+    160deg,
+    rgba(245, 235, 226, 0.085) 0%,
+    rgba(245, 235, 226, 0.03) 45%,
+    rgba(202, 116, 59, 0.035) 100%
+  );
+  background-color: rgba(6, 3, 1, 0.42);
+  backdrop-filter: blur(18px) saturate(150%);
+  -webkit-backdrop-filter: blur(18px) saturate(150%);
+  border: 1px solid rgba(245, 235, 226, 0.07);
+  box-shadow: inset 0 1px 0 0 rgba(245, 235, 226, 0.1);
+}
+
+/* Hairline separation instead of hard borders (prefs 6.3) */
+.hairline {
+  background: linear-gradient(
+    90deg,
+    transparent,
+    rgba(245, 235, 226, 0.14) 18%,
+    rgba(245, 235, 226, 0.14) 82%,
+    transparent
+  );
+  height: 1px;
+}
+
+/* --------------------------------------------------------------------------
+   Film grain — sits above everything, below the cursor.
+   Pure CSS/SVG so it costs no network request and no WebGL context.
+   -------------------------------------------------------------------------- */
+
+.grain {
+  position: fixed;
+  inset: -150%;
+  z-index: 90;
+  pointer-events: none;
+  opacity: var(--grain-opacity);
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='200' height='200'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='200' height='200' filter='url(%23n)'/%3E%3C/svg%3E");
+  animation: grain-shift 0.7s steps(1) infinite;
+  will-change: transform;
+}
+
+@keyframes grain-shift {
+  0% { transform: translate(0, 0); }
+  20% { transform: translate(-1.5%, 1%); }
+  40% { transform: translate(1%, -1.5%); }
+  60% { transform: translate(-1%, -1%); }
+  80% { transform: translate(1.5%, 1.5%); }
+  100% { transform: translate(0, 0); }
+}
+
+/* Vignette — pulls the eye to centre, same trick as the portrait's lighting */
+.vignette {
+  position: fixed;
+  inset: 0;
+  z-index: 89;
+  pointer-events: none;
+  background: radial-gradient(
+    120% 90% at 50% 45%,
+    transparent 42%,
+    rgba(6, 3, 1, 0.45) 82%,
+    rgba(6, 3, 1, 0.82) 100%
+  );
+}
+
+/* --------------------------------------------------------------------------
+   Reveal primitives — GSAP drives these; CSS defines rest + fallback state.
+   If JS fails, everything stays visible rather than invisible.
+   -------------------------------------------------------------------------- */
+
+[data-reveal] {
+  will-change: transform, opacity;
+}
+
+.no-js [data-reveal],
+.reveal-done [data-reveal] {
+  opacity: 1;
+  transform: none;
+}
+
+/* Masked line reveal for headings */
+.line-mask {
+  display: block;
+  overflow: hidden;
+}
+.line-mask > span {
+  display: block;
+  will-change: transform;
+}
+
+/* --------------------------------------------------------------------------
+   Reduced motion — the whole WebGL/scroll layer must degrade, not break.
+   -------------------------------------------------------------------------- */
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+  .grain {
+    animation: none;
+  }
+  [data-reveal] {
+    opacity: 1 !important;
+    transform: none !important;
+  }
+}
+
+/* Touch devices: no custom cursor, lighter grain, no hover-only affordances */
+@media (hover: none) {
+  html[data-cursor="on"],
+  html[data-cursor="on"] * {
+    cursor: auto !important;
+  }
+  :root {
+    --grain-opacity: 0.022;
+  }
 }
